@@ -99,7 +99,7 @@
         .check-yes { color: #4CAF50; font-weight: bold; }
         .check-no  { color: #999; }
 
-        /* ===== 管理パネル ===== */
+        /* ===== 管理者ボタン ===== */
         .admin-toggle {
             margin-top: 30px;
             text-align: right;
@@ -117,6 +117,67 @@
 
         .admin-toggle button:hover { background: #333; }
 
+        /* ===== パスワード画面 ===== */
+        #passwordModal {
+            display: none;
+            margin-top: 20px;
+            background: #f8fafc;
+            border: 2px solid #94a3b8;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        #passwordModal h2 {
+            color: #334155;
+            margin-bottom: 16px;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .password-form {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .password-form input {
+            padding: 10px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 15px;
+            letter-spacing: 2px;
+        }
+
+        .password-form input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+        }
+
+        .login-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-btn:hover { background: #1d4ed8; }
+
+        #passwordError {
+            color: #dc2626;
+            font-size: 13px;
+            text-align: center;
+            display: none;
+        }
+
+        /* ===== 管理パネル ===== */
         #adminPanel {
             display: none;
             margin-top: 20px;
@@ -132,7 +193,22 @@
             font-size: 18px;
             border-bottom: 2px solid #93c5fd;
             padding-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover { background: #dc2626; }
 
         .admin-form {
             display: flex;
@@ -260,14 +336,32 @@
         </table>
     </div>
 
-    <!-- 管理パネル切り替えボタン -->
+    <!-- 管理者ボタン -->
     <div class="admin-toggle">
-        <button onclick="toggleAdmin()">🔧 管理者メニュー</button>
+        <button onclick="showPasswordModal()">🔧 管理者メニュー</button>
+    </div>
+
+    <!-- パスワード入力画面 -->
+    <div id="passwordModal">
+        <h2>🔑 管理者ログイン</h2>
+        <div class="password-form">
+            <input
+                type="password"
+                id="passwordInput"
+                placeholder="パスワードを入力してください"
+                onkeydown="if(event.key==='Enter') checkPassword()"
+            />
+            <p id="passwordError">❌ パスワードが違います。もう一度お試しください。</p>
+            <button class="login-btn" onclick="checkPassword()">ログイン</button>
+        </div>
     </div>
 
     <!-- 管理パネル -->
     <div id="adminPanel">
-        <h2>🔧 稼働状況 管理パネル</h2>
+        <h2>
+            🔧 稼働状況 管理パネル
+            <button class="logout-btn" onclick="logout()">ログアウト</button>
+        </h2>
         <div class="admin-form">
             <div class="form-group">
                 <label for="shelterSelect">📍 施設名を選択</label>
@@ -301,12 +395,59 @@
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+    // ===== パスワード設定 =====
+    const ADMIN_PASSWORD = 'kitakukonnan@Namba';
+
     // ===== 稼働状況ラベル・クラス =====
     const statusMap = {
         available: { label: '余裕あり',     cls: 'status-available' },
         almost:    { label: 'もうすぐ満室', cls: 'status-almost'    },
         full:      { label: '満室',         cls: 'status-full'      },
     };
+
+    // ===== パスワードモーダル表示 =====
+    function showPasswordModal() {
+        const modal   = document.getElementById('passwordModal');
+        const panel   = document.getElementById('adminPanel');
+        const errMsg  = document.getElementById('passwordError');
+
+        // すでにログイン済みの場合はそのまま管理パネルを開閉
+        if (sessionStorage.getItem('adminLoggedIn') === 'true') {
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+            return;
+        }
+
+        modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
+        document.getElementById('passwordInput').value = '';
+        errMsg.style.display = 'none';
+    }
+
+    // ===== パスワードチェック =====
+    function checkPassword() {
+        const input  = document.getElementById('passwordInput').value;
+        const errMsg = document.getElementById('passwordError');
+
+        if (input === ADMIN_PASSWORD) {
+            // ログイン成功
+            sessionStorage.setItem('adminLoggedIn', 'true');
+            document.getElementById('passwordModal').style.display = 'none';
+            document.getElementById('adminPanel').style.display = 'block';
+            errMsg.style.display = 'none';
+            loadShelters();
+        } else {
+            // ログイン失敗
+            errMsg.style.display = 'block';
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordInput').focus();
+        }
+    }
+
+    // ===== ログアウト =====
+    function logout() {
+        sessionStorage.removeItem('adminLoggedIn');
+        document.getElementById('adminPanel').style.display = 'none';
+        showMsg('', '');
+    }
 
     // ===== データ取得・テーブル描画 =====
     async function loadShelters() {
@@ -341,17 +482,16 @@
 
     // ===== 稼働状況の更新 =====
     async function updateStatus() {
-        const shelterId  = document.getElementById('shelterSelect').value;
-        const newStatus  = document.getElementById('statusSelect').value;
-        const btn        = document.querySelector('.update-btn');
-        const msg        = document.getElementById('resultMsg');
+        const shelterId = document.getElementById('shelterSelect').value;
+        const newStatus = document.getElementById('statusSelect').value;
+        const btn       = document.querySelector('.update-btn');
 
         if (!shelterId || !newStatus) {
             showMsg('⚠️ 施設名と稼働状況を両方選択してください。', 'error');
             return;
         }
 
-        btn.disabled = true;
+        btn.disabled    = true;
         btn.textContent = '更新中...';
 
         const { error } = await db
@@ -364,27 +504,22 @@
         } else {
             const shelterName = document.getElementById('shelterSelect').selectedOptions[0].text;
             const statusLabel = statusMap[newStatus].label;
-            showMsg(`✅ 「${shelterName}」の状況を「${statusLabel}」に更新しました！`, 'success');
+            showMsg(`✅ 「${shelterName}」を「${statusLabel}」に更新しました！`, 'success');
             await loadShelters();
         }
 
-        btn.disabled = false;
+        btn.disabled    = false;
         btn.textContent = '更新する';
     }
 
     // ===== メッセージ表示 =====
     function showMsg(text, type) {
         const msg = document.getElementById('resultMsg');
-        msg.textContent = text;
-        msg.className = type;
+        if (!text) { msg.style.display = 'none'; return; }
+        msg.textContent  = text;
+        msg.className    = type;
         msg.style.display = 'block';
         setTimeout(() => { msg.style.display = 'none'; }, 4000);
-    }
-
-    // ===== 管理パネル 開閉 =====
-    function toggleAdmin() {
-        const panel = document.getElementById('adminPanel');
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
     }
 
     // ===== 時刻表示 =====
@@ -399,7 +534,7 @@
     loadShelters();
     updateTime();
     setInterval(updateTime, 60000);
-    setInterval(loadShelters, 30000); // 30秒ごとに自動更新
+    setInterval(loadShelters, 30000);
 </script>
 </body>
 </html>
