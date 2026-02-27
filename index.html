@@ -7,14 +7,12 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
             background-color: #f5f5f5;
             padding: 20px;
             line-height: 1.6;
         }
-
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -23,7 +21,6 @@
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-
         h1 {
             color: #333;
             margin-bottom: 10px;
@@ -31,289 +28,166 @@
             border-bottom: 3px solid #4CAF50;
             padding-bottom: 10px;
         }
-
-        .update-time {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 20px;
-        }
-
-        .legend {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-
-        .legend-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-        }
-
+        .update-time { color: #666; font-size: 14px; margin-bottom: 20px; }
+        .legend { display: flex; gap: 20px; margin-bottom: 20px; flex-wrap: wrap; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+        .legend-color { width: 20px; height: 20px; border-radius: 4px; }
         .table-wrapper { overflow-x: auto; }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-
-        th {
-            background-color: #333;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-size: 14px;
-        }
-
-        td {
-            padding: 12px;
-            border-bottom: 1px solid #ddd;
-            font-size: 14px;
-        }
-
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { background-color: #333; color: white; padding: 12px; text-align: left; font-size: 14px; }
+        td { padding: 12px; border-bottom: 1px solid #ddd; font-size: 14px; }
         tr:hover { background-color: #f9f9f9; }
-
         .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 4px;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            min-width: 110px;
+            display: inline-block; padding: 6px 12px; border-radius: 4px;
+            color: white; font-weight: bold; text-align: center; min-width: 110px;
         }
-
         .status-available { background-color: #4CAF50; }
         .status-almost    { background-color: #ff9800; }
         .status-full      { background-color: #f44336; }
-
         .check-yes { color: #4CAF50; font-weight: bold; }
         .check-no  { color: #999; }
 
         /* ===== 管理者ボタン ===== */
-        .admin-toggle {
-            margin-top: 30px;
-            text-align: right;
-        }
-
+        .admin-toggle { margin-top: 30px; text-align: right; }
         .admin-toggle button {
-            background: #555;
-            color: white;
-            border: none;
-            padding: 8px 18px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 13px;
+            background: #555; color: white; border: none;
+            padding: 8px 18px; border-radius: 4px; cursor: pointer; font-size: 13px;
         }
-
         .admin-toggle button:hover { background: #333; }
 
         /* ===== パスワード画面 ===== */
         #passwordModal {
-            display: none;
-            margin-top: 20px;
-            background: #f8fafc;
-            border: 2px solid #94a3b8;
-            border-radius: 8px;
-            padding: 24px;
-            max-width: 400px;
-            margin-left: auto;
-            margin-right: auto;
+            display: none; margin-top: 20px; background: #f8fafc;
+            border: 2px solid #94a3b8; border-radius: 8px; padding: 24px;
+            max-width: 400px; margin-left: auto; margin-right: auto;
         }
-
-        #passwordModal h2 {
-            color: #334155;
-            margin-bottom: 16px;
-            font-size: 18px;
-            text-align: center;
-        }
-
-        .password-form {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
+        #passwordModal h2 { color: #334155; margin-bottom: 16px; font-size: 18px; text-align: center; }
+        .password-form { display: flex; flex-direction: column; gap: 12px; }
         .password-form input {
-            padding: 10px 14px;
-            border: 1px solid #cbd5e1;
-            border-radius: 6px;
-            font-size: 15px;
-            letter-spacing: 2px;
+            padding: 10px 14px; border: 1px solid #cbd5e1;
+            border-radius: 6px; font-size: 15px; letter-spacing: 2px;
         }
-
         .password-form input:focus {
-            outline: none;
-            border-color: #3b82f6;
+            outline: none; border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
         }
-
         .login-btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
+            background: #2563eb; color: white; border: none;
+            padding: 10px; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer;
         }
-
         .login-btn:hover { background: #1d4ed8; }
-
-        #passwordError {
-            color: #dc2626;
-            font-size: 13px;
-            text-align: center;
-            display: none;
-        }
+        #passwordError { color: #dc2626; font-size: 13px; text-align: center; display: none; }
 
         /* ===== 管理パネル ===== */
-        #adminPanel {
-            display: none;
-            margin-top: 20px;
-            background: #f0f4ff;
-            border: 2px solid #3b82f6;
-            border-radius: 8px;
-            padding: 24px;
-        }
+        #adminPanel { display: none; margin-top: 20px; }
 
-        #adminPanel h2 {
-            color: #1e40af;
-            margin-bottom: 20px;
-            font-size: 18px;
-            border-bottom: 2px solid #93c5fd;
-            padding-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        .admin-header {
+            background: #1e40af; color: white; padding: 14px 20px;
+            border-radius: 8px 8px 0 0; display: flex;
+            justify-content: space-between; align-items: center;
         }
-
+        .admin-header h2 { font-size: 18px; }
         .logout-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 4px 12px;
-            border-radius: 4px;
-            font-size: 12px;
-            cursor: pointer;
+            background: #ef4444; color: white; border: none;
+            padding: 5px 14px; border-radius: 4px; font-size: 13px; cursor: pointer;
         }
-
         .logout-btn:hover { background: #dc2626; }
 
-        .admin-form {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            align-items: flex-end;
+        /* ===== タブ ===== */
+        .tabs {
+            display: flex; border-bottom: 2px solid #3b82f6;
+            background: #eff6ff;
         }
-
-        .admin-form .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 200px;
+        .tab-btn {
+            padding: 12px 20px; border: none; background: transparent;
+            cursor: pointer; font-size: 14px; font-weight: bold;
+            color: #6b7280; border-bottom: 3px solid transparent;
+            margin-bottom: -2px; transition: all 0.2s;
         }
+        .tab-btn:hover { color: #2563eb; background: #dbeafe; }
+        .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; background: white; }
 
-        .admin-form label {
-            font-size: 13px;
-            font-weight: bold;
-            color: #374151;
+        .tab-content {
+            display: none; padding: 24px;
+            background: #f0f4ff; border: 2px solid #3b82f6;
+            border-top: none; border-radius: 0 0 8px 8px;
         }
+        .tab-content.active { display: block; }
 
-        .admin-form select {
-            padding: 10px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 14px;
-            background: white;
-            cursor: pointer;
+        /* ===== フォーム共通 ===== */
+        .form-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 16px; margin-bottom: 16px;
         }
-
-        .admin-form select:focus {
-            outline: none;
-            border-color: #3b82f6;
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        .form-group label { font-size: 13px; font-weight: bold; color: #374151; }
+        .form-group input, .form-group select {
+            padding: 10px 12px; border: 1px solid #d1d5db;
+            border-radius: 6px; font-size: 14px; background: white;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none; border-color: #3b82f6;
             box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
         }
 
-        .update-btn {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 10px 28px;
-            border-radius: 6px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            height: 42px;
-        }
+        /* チェックボックス */
+        .checkbox-group { display: flex; gap: 20px; flex-wrap: wrap; margin-top: 4px; }
+        .checkbox-item { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+        .checkbox-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
 
-        .update-btn:hover { background: #1d4ed8; }
-        .update-btn:disabled { background: #93c5fd; cursor: not-allowed; }
-
-        #resultMsg {
-            margin-top: 14px;
-            padding: 10px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            display: none;
+        /* ボタン */
+        .btn {
+            padding: 10px 28px; border: none; border-radius: 6px;
+            font-size: 15px; font-weight: bold; cursor: pointer;
         }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-primary:disabled { background: #93c5fd; cursor: not-allowed; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-danger:hover { background: #dc2626; }
+        .btn-danger:disabled { background: #fca5a5; cursor: not-allowed; }
+        .btn-success { background: #16a34a; color: white; }
+        .btn-success:hover { background: #15803d; }
 
-        #resultMsg.success {
-            background: #d1fae5;
-            color: #065f46;
-            border: 1px solid #6ee7b7;
+        /* メッセージ */
+        .result-msg {
+            margin-top: 14px; padding: 10px 16px;
+            border-radius: 6px; font-size: 14px; display: none;
         }
+        .result-msg.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+        .result-msg.error   { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
 
-        #resultMsg.error {
-            background: #fee2e2;
-            color: #991b1b;
-            border: 1px solid #fca5a5;
+        /* 削除確認 */
+        .delete-confirm {
+            display: none; margin-top: 16px; padding: 16px;
+            background: #fef2f2; border: 2px solid #fca5a5; border-radius: 6px;
         }
+        .delete-confirm p { color: #991b1b; font-weight: bold; margin-bottom: 12px; }
+        .delete-confirm .btn-group { display: flex; gap: 10px; }
 
-        footer {
-            margin-top: 30px;
-            text-align: center;
-            color: #666;
-            font-size: 12px;
-        }
+        footer { margin-top: 30px; text-align: center; color: #666; font-size: 12px; }
 
         @media (max-width: 768px) {
             .container { padding: 15px; }
             h1 { font-size: 20px; }
             th, td { padding: 8px 6px; font-size: 12px; }
             .status-badge { min-width: 90px; font-size: 12px; padding: 4px 8px; }
-            .admin-form { flex-direction: column; }
-            .admin-form .form-group { min-width: 100%; }
+            .form-grid { grid-template-columns: 1fr; }
+            .tab-btn { padding: 10px 12px; font-size: 12px; }
         }
     </style>
 </head>
 <body>
 <div class="container">
-
     <h1>🏢 帰宅困難者向け一時滞在施設 稼働状況</h1>
     <p class="update-time">最終更新: <span id="updateTime"></span></p>
 
     <!-- 凡例 -->
     <div class="legend">
-        <div class="legend-item">
-            <div class="legend-color status-available"></div><span>余裕あり</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color status-almost"></div><span>もうすぐ満室</span>
-        </div>
-        <div class="legend-item">
-            <div class="legend-color status-full"></div><span>満室</span>
-        </div>
+        <div class="legend-item"><div class="legend-color status-available"></div><span>余裕あり</span></div>
+        <div class="legend-item"><div class="legend-color status-almost"></div><span>もうすぐ満室</span></div>
+        <div class="legend-item"><div class="legend-color status-full"></div><span>満室</span></div>
     </div>
 
     <!-- 公開テーブル -->
@@ -321,13 +195,8 @@
         <table>
             <thead>
                 <tr>
-                    <th>稼働状況</th>
-                    <th>施設名</th>
-                    <th>住所</th>
-                    <th>最大収容人数</th>
-                    <th>トイレ使用</th>
-                    <th>スマホ充電</th>
-                    <th>備蓄物資</th>
+                    <th>稼働状況</th><th>施設名</th><th>住所</th>
+                    <th>最大収容人数</th><th>トイレ使用</th><th>スマホ充電</th><th>備蓄物資</th>
                 </tr>
             </thead>
             <tbody id="shelterTable">
@@ -345,12 +214,8 @@
     <div id="passwordModal">
         <h2>🔑 管理者ログイン</h2>
         <div class="password-form">
-            <input
-                type="password"
-                id="passwordInput"
-                placeholder="パスワードを入力してください"
-                onkeydown="if(event.key==='Enter') checkPassword()"
-            />
+            <input type="password" id="passwordInput" placeholder="パスワードを入力してください"
+                onkeydown="if(event.key==='Enter') checkPassword()"/>
             <p id="passwordError">❌ パスワードが違います。もう一度お試しください。</p>
             <button class="login-btn" onclick="checkPassword()">ログイン</button>
         </div>
@@ -358,29 +223,152 @@
 
     <!-- 管理パネル -->
     <div id="adminPanel">
-        <h2>
-            🔧 稼働状況 管理パネル
+        <div class="admin-header">
+            <h2>🔧 稼働状況 管理パネル</h2>
             <button class="logout-btn" onclick="logout()">ログアウト</button>
-        </h2>
-        <div class="admin-form">
-            <div class="form-group">
-                <label for="shelterSelect">📍 施設名を選択</label>
-                <select id="shelterSelect">
+        </div>
+
+        <!-- タブ -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('tab1')">📋 稼働状況の更新</button>
+            <button class="tab-btn" onclick="switchTab('tab2')">➕ 施設を追加</button>
+            <button class="tab-btn" onclick="switchTab('tab3')">✏️ 施設情報を編集</button>
+            <button class="tab-btn" onclick="switchTab('tab4')">🗑️ 施設を削除</button>
+        </div>
+
+        <!-- タブ1: 稼働状況の更新 -->
+        <div id="tab1" class="tab-content active">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>📍 施設名を選択</label>
+                    <select id="statusShelterId">
+                        <option value="">-- 施設を選んでください --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>🚦 稼働状況を選択</label>
+                    <select id="statusSelect">
+                        <option value="">-- 状況を選んでください --</option>
+                        <option value="available">✅ 余裕あり</option>
+                        <option value="almost">🟠 もうすぐ満室</option>
+                        <option value="full">🔴 満室</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="updateStatus()">更新する</button>
+            <div id="msg1" class="result-msg"></div>
+        </div>
+
+        <!-- タブ2: 施設を追加 -->
+        <div id="tab2" class="tab-content">
+            <div class="form-grid">
+                <div class="form-group full-width">
+                    <label>🏢 施設名 <span style="color:red">*</span></label>
+                    <input type="text" id="addName" placeholder="例：なんば市民センター"/>
+                </div>
+                <div class="form-group full-width">
+                    <label>📍 住所 <span style="color:red">*</span></label>
+                    <input type="text" id="addAddress" placeholder="例：大阪府大阪市中央区〇〇1-2-3"/>
+                </div>
+                <div class="form-group">
+                    <label>👥 最大収容人数 <span style="color:red">*</span></label>
+                    <input type="number" id="addCapacity" placeholder="例：200" min="1"/>
+                </div>
+                <div class="form-group">
+                    <label>🚦 初期稼働状況</label>
+                    <select id="addStatus">
+                        <option value="available">✅ 余裕あり</option>
+                        <option value="almost">🟠 もうすぐ満室</option>
+                        <option value="full">🔴 満室</option>
+                    </select>
+                </div>
+                <div class="form-group full-width">
+                    <label>🔧 設備</label>
+                    <div class="checkbox-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="addToilet" checked/> 🚽 トイレ使用可
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="addCharging" checked/> 🔌 スマホ充電可
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="addSupplies" checked/> 📦 備蓄物資あり
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="addShelter()">➕ 追加する</button>
+            <div id="msg2" class="result-msg"></div>
+        </div>
+
+        <!-- タブ3: 施設情報を編集 -->
+        <div id="tab3" class="tab-content">
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>📍 編集する施設を選択</label>
+                <select id="editShelterId" onchange="loadEditForm()">
                     <option value="">-- 施設を選んでください --</option>
                 </select>
             </div>
-            <div class="form-group">
-                <label for="statusSelect">🚦 稼働状況を選択</label>
-                <select id="statusSelect">
-                    <option value="">-- 状況を選んでください --</option>
-                    <option value="available">✅ 余裕あり</option>
-                    <option value="almost">🟠 もうすぐ満室</option>
-                    <option value="full">🔴 満室</option>
+            <div id="editForm" style="display:none;">
+                <div class="form-grid">
+                    <div class="form-group full-width">
+                        <label>🏢 施設名</label>
+                        <input type="text" id="editName"/>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>📍 住所</label>
+                        <input type="text" id="editAddress"/>
+                    </div>
+                    <div class="form-group">
+                        <label>👥 最大収容人数</label>
+                        <input type="number" id="editCapacity" min="1"/>
+                    </div>
+                    <div class="form-group">
+                        <label>🚦 稼働状況</label>
+                        <select id="editStatus">
+                            <option value="available">✅ 余裕あり</option>
+                            <option value="almost">🟠 もうすぐ満室</option>
+                            <option value="full">🔴 満室</option>
+                        </select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>🔧 設備</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="editToilet"/> 🚽 トイレ使用可
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="editCharging"/> 🔌 スマホ充電可
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="editSupplies"/> 📦 備蓄物資あり
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="saveShelter()">💾 保存する</button>
+            </div>
+            <div id="msg3" class="result-msg"></div>
+        </div>
+
+        <!-- タブ4: 施設を削除 -->
+        <div id="tab4" class="tab-content">
+            <div class="form-group" style="margin-bottom:16px;">
+                <label>🗑️ 削除する施設を選択</label>
+                <select id="deleteShelterId" onchange="showDeleteConfirm()">
+                    <option value="">-- 施設を選んでください --</option>
                 </select>
             </div>
-            <button class="update-btn" onclick="updateStatus()">更新する</button>
+            <div id="deleteConfirm" class="delete-confirm">
+                <p>⚠️ 本当に削除しますか？この操作は取り消せません。</p>
+                <p id="deleteTargetName" style="color:#7f1d1d;margin-bottom:12px;"></p>
+                <div class="btn-group">
+                    <button class="btn btn-danger" onclick="deleteShelter()">🗑️ 削除する</button>
+                    <button class="btn" style="background:#6b7280;color:white;" onclick="cancelDelete()">キャンセル</button>
+                </div>
+            </div>
+            <div id="msg4" class="result-msg"></div>
         </div>
-        <div id="resultMsg"></div>
     </div>
 
     <footer>
@@ -389,67 +377,64 @@
 </div>
 
 <script>
-    // ===== Supabase 設定 =====
-    const SUPABASE_URL = 'https://bbgpwmkyfvkpogmbikbz.supabase.co';
-    const SUPABASE_KEY = 'sb_publishable_5RdECTeM34awt0h8TDlf-w_GTyXhR80';
+    // ===== Supabase設定 =====
+    const SUPABASE_URL  = 'https://bbgpwmkyfvkpogmbikbz.supabase.co';
+    const SUPABASE_KEY  = 'sb_publishable_5RdECTeM34awt0h8TDlf-w_GTyXhR80';
     const { createClient } = supabase;
     const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // ===== パスワード設定 =====
     const ADMIN_PASSWORD = 'kitakukonnan@Namba';
 
-    // ===== 稼働状況ラベル・クラス =====
     const statusMap = {
         available: { label: '余裕あり',     cls: 'status-available' },
         almost:    { label: 'もうすぐ満室', cls: 'status-almost'    },
         full:      { label: '満室',         cls: 'status-full'      },
     };
 
-    // ===== パスワードモーダル表示 =====
-    function showPasswordModal() {
-        const modal   = document.getElementById('passwordModal');
-        const panel   = document.getElementById('adminPanel');
-        const errMsg  = document.getElementById('passwordError');
+    let sheltersCache = [];
 
-        // すでにログイン済みの場合はそのまま管理パネルを開閉
+    // ===== パスワード =====
+    function showPasswordModal() {
+        const modal = document.getElementById('passwordModal');
+        const panel = document.getElementById('adminPanel');
         if (sessionStorage.getItem('adminLoggedIn') === 'true') {
             panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
             return;
         }
-
         modal.style.display = modal.style.display === 'none' ? 'block' : 'none';
         document.getElementById('passwordInput').value = '';
-        errMsg.style.display = 'none';
+        document.getElementById('passwordError').style.display = 'none';
     }
 
-    // ===== パスワードチェック =====
     function checkPassword() {
-        const input  = document.getElementById('passwordInput').value;
-        const errMsg = document.getElementById('passwordError');
-
+        const input = document.getElementById('passwordInput').value;
         if (input === ADMIN_PASSWORD) {
-            // ログイン成功
             sessionStorage.setItem('adminLoggedIn', 'true');
             document.getElementById('passwordModal').style.display = 'none';
             document.getElementById('adminPanel').style.display = 'block';
-            errMsg.style.display = 'none';
+            document.getElementById('passwordError').style.display = 'none';
             loadShelters();
         } else {
-            // ログイン失敗
-            errMsg.style.display = 'block';
+            document.getElementById('passwordError').style.display = 'block';
             document.getElementById('passwordInput').value = '';
             document.getElementById('passwordInput').focus();
         }
     }
 
-    // ===== ログアウト =====
     function logout() {
         sessionStorage.removeItem('adminLoggedIn');
         document.getElementById('adminPanel').style.display = 'none';
-        showMsg('', '');
     }
 
-    // ===== データ取得・テーブル描画 =====
+    // ===== タブ切り替え =====
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // ===== データ取得・描画 =====
     async function loadShelters() {
         const { data, error } = await db.from('shelters').select('*').order('id');
         if (error) {
@@ -457,69 +442,166 @@
                 '<tr><td colspan="7" style="text-align:center;color:red;">データの取得に失敗しました。</td></tr>';
             return;
         }
+        sheltersCache = data;
 
         // 公開テーブル
-        const tbody = document.getElementById('shelterTable');
-        tbody.innerHTML = data.map(s => {
+        document.getElementById('shelterTable').innerHTML = data.map(s => {
             const st = statusMap[s.status] || statusMap['available'];
-            return `
-            <tr>
+            return `<tr>
                 <td><span class="status-badge ${st.cls}">${st.label}</span></td>
                 <td>${s.name}</td>
                 <td>${s.address}</td>
                 <td>${s.capacity}人</td>
-                <td><span class="${s.toilet   ? 'check-yes' : 'check-no'}">${s.toilet   ? '◯' : '×'}</span></td>
-                <td><span class="${s.charging ? 'check-yes' : 'check-no'}">${s.charging ? '◯' : '×'}</span></td>
-                <td><span class="${s.supplies ? 'check-yes' : 'check-no'}">${s.supplies ? '◯' : '×'}</span></td>
+                <td><span class="${s.toilet   ? 'check-yes':'check-no'}">${s.toilet   ?'◯':'×'}</span></td>
+                <td><span class="${s.charging ? 'check-yes':'check-no'}">${s.charging ?'◯':'×'}</span></td>
+                <td><span class="${s.supplies ? 'check-yes':'check-no'}">${s.supplies ?'◯':'×'}</span></td>
             </tr>`;
         }).join('');
 
-        // 管理パネルの施設選択リスト
-        const sel = document.getElementById('shelterSelect');
-        sel.innerHTML = '<option value="">-- 施設を選んでください --</option>' +
+        // 各セレクトリストを更新
+        const options = '<option value="">-- 施設を選んでください --</option>' +
             data.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+        ['statusShelterId','editShelterId','deleteShelterId'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = options;
+        });
     }
 
-    // ===== 稼働状況の更新 =====
+    // ===== タブ1: 稼働状況の更新 =====
     async function updateStatus() {
-        const shelterId = document.getElementById('shelterSelect').value;
+        const shelterId = document.getElementById('statusShelterId').value;
         const newStatus = document.getElementById('statusSelect').value;
-        const btn       = document.querySelector('.update-btn');
-
         if (!shelterId || !newStatus) {
-            showMsg('⚠️ 施設名と稼働状況を両方選択してください。', 'error');
-            return;
+            showMsg('msg1','⚠️ 施設名と稼働状況を両方選択してください。','error'); return;
         }
-
-        btn.disabled    = true;
-        btn.textContent = '更新中...';
-
-        const { error } = await db
-            .from('shelters')
+        const { error } = await db.from('shelters')
             .update({ status: newStatus, updated_at: new Date().toISOString() })
             .eq('id', shelterId);
-
         if (error) {
-            showMsg('❌ 更新に失敗しました。もう一度お試しください。', 'error');
+            showMsg('msg1','❌ 更新に失敗しました。','error');
         } else {
-            const shelterName = document.getElementById('shelterSelect').selectedOptions[0].text;
-            const statusLabel = statusMap[newStatus].label;
-            showMsg(`✅ 「${shelterName}」を「${statusLabel}」に更新しました！`, 'success');
+            const name  = document.getElementById('statusShelterId').selectedOptions[0].text;
+            const label = statusMap[newStatus].label;
+            showMsg('msg1',`✅ 「${name}」を「${label}」に更新しました！`,'success');
             await loadShelters();
         }
+    }
 
-        btn.disabled    = false;
-        btn.textContent = '更新する';
+    // ===== タブ2: 施設を追加 =====
+    async function addShelter() {
+        const name     = document.getElementById('addName').value.trim();
+        const address  = document.getElementById('addAddress').value.trim();
+        const capacity = parseInt(document.getElementById('addCapacity').value);
+        const status   = document.getElementById('addStatus').value;
+        const toilet   = document.getElementById('addToilet').checked;
+        const charging = document.getElementById('addCharging').checked;
+        const supplies = document.getElementById('addSupplies').checked;
+
+        if (!name || !address || !capacity) {
+            showMsg('msg2','⚠️ 施設名・住所・収容人数は必須です。','error'); return;
+        }
+
+        const { error } = await db.from('shelters').insert([{
+            name, address, capacity, status, toilet, charging, supplies,
+            updated_at: new Date().toISOString()
+        }]);
+
+        if (error) {
+            showMsg('msg2','❌ 追加に失敗しました。','error');
+        } else {
+            showMsg('msg2',`✅ 「${name}」を追加しました！`,'success');
+            ['addName','addAddress','addCapacity'].forEach(id =>
+                document.getElementById(id).value = '');
+            document.getElementById('addToilet').checked   = true;
+            document.getElementById('addCharging').checked = true;
+            document.getElementById('addSupplies').checked = true;
+            await loadShelters();
+        }
+    }
+
+    // ===== タブ3: 施設情報を編集 =====
+    function loadEditForm() {
+        const id = document.getElementById('editShelterId').value;
+        const editForm = document.getElementById('editForm');
+        if (!id) { editForm.style.display = 'none'; return; }
+
+        const s = sheltersCache.find(x => x.id == id);
+        if (!s) return;
+
+        document.getElementById('editName').value     = s.name;
+        document.getElementById('editAddress').value  = s.address;
+        document.getElementById('editCapacity').value = s.capacity;
+        document.getElementById('editStatus').value   = s.status;
+        document.getElementById('editToilet').checked   = s.toilet;
+        document.getElementById('editCharging').checked = s.charging;
+        document.getElementById('editSupplies').checked = s.supplies;
+        editForm.style.display = 'block';
+    }
+
+    async function saveShelter() {
+        const id       = document.getElementById('editShelterId').value;
+        const name     = document.getElementById('editName').value.trim();
+        const address  = document.getElementById('editAddress').value.trim();
+        const capacity = parseInt(document.getElementById('editCapacity').value);
+        const status   = document.getElementById('editStatus').value;
+        const toilet   = document.getElementById('editToilet').checked;
+        const charging = document.getElementById('editCharging').checked;
+        const supplies = document.getElementById('editSupplies').checked;
+
+        if (!name || !address || !capacity) {
+            showMsg('msg3','⚠️ 施設名・住所・収容人数は必須です。','error'); return;
+        }
+
+        const { error } = await db.from('shelters')
+            .update({ name, address, capacity, status, toilet, charging, supplies,
+                      updated_at: new Date().toISOString() })
+            .eq('id', id);
+
+        if (error) {
+            showMsg('msg3','❌ 保存に失敗しました。','error');
+        } else {
+            showMsg('msg3',`✅ 「${name}」の情報を保存しました！`,'success');
+            await loadShelters();
+        }
+    }
+
+    // ===== タブ4: 施設を削除 =====
+    function showDeleteConfirm() {
+        const id = document.getElementById('deleteShelterId').value;
+        const confirmDiv = document.getElementById('deleteConfirm');
+        if (!id) { confirmDiv.style.display = 'none'; return; }
+        const s = sheltersCache.find(x => x.id == id);
+        if (!s) return;
+        document.getElementById('deleteTargetName').textContent = `「${s.name}」を削除します`;
+        confirmDiv.style.display = 'block';
+    }
+
+    function cancelDelete() {
+        document.getElementById('deleteShelterId').value = '';
+        document.getElementById('deleteConfirm').style.display = 'none';
+    }
+
+    async function deleteShelter() {
+        const id   = document.getElementById('deleteShelterId').value;
+        const name = document.getElementById('deleteShelterId').selectedOptions[0].text;
+
+        const { error } = await db.from('shelters').delete().eq('id', id);
+        if (error) {
+            showMsg('msg4','❌ 削除に失敗しました。','error');
+        } else {
+            showMsg('msg4',`✅ 「${name}」を削除しました。`,'success');
+            document.getElementById('deleteConfirm').style.display = 'none';
+            await loadShelters();
+        }
     }
 
     // ===== メッセージ表示 =====
-    function showMsg(text, type) {
-        const msg = document.getElementById('resultMsg');
-        if (!text) { msg.style.display = 'none'; return; }
-        msg.textContent  = text;
-        msg.className    = type;
-        msg.style.display = 'block';
-        setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    function showMsg(id, text, type) {
+        const el = document.getElementById(id);
+        el.textContent   = text;
+        el.className     = `result-msg ${type}`;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 4000);
     }
 
     // ===== 時刻表示 =====
