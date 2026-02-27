@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>帰宅困難者向け一時滞在施設 - 稼働状況</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
@@ -30,7 +27,7 @@
         h1 {
             color: #333;
             margin-bottom: 10px;
-            font-size: 28px;
+            font-size: 26px;
             border-bottom: 3px solid #4CAF50;
             padding-bottom: 10px;
         }
@@ -52,6 +49,7 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 14px;
         }
 
         .legend-color {
@@ -60,22 +58,12 @@
             border-radius: 4px;
         }
 
-        .status-full {
-            background-color: #f44336;
-        }
-
-        .status-almost {
-            background-color: #ff9800;
-        }
-
-        .status-available {
-            background-color: #4CAF50;
-        }
+        .table-wrapper { overflow-x: auto; }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         th {
@@ -83,7 +71,6 @@
             color: white;
             padding: 12px;
             text-align: left;
-            font-weight: bold;
             font-size: 14px;
         }
 
@@ -93,9 +80,7 @@
             font-size: 14px;
         }
 
-        tr:hover {
-            background-color: #f9f9f9;
-        }
+        tr:hover { background-color: #f9f9f9; }
 
         .status-badge {
             display: inline-block;
@@ -104,45 +89,119 @@
             color: white;
             font-weight: bold;
             text-align: center;
-            min-width: 100px;
+            min-width: 110px;
         }
 
-        .check-yes {
-            color: #4CAF50;
+        .status-available { background-color: #4CAF50; }
+        .status-almost    { background-color: #ff9800; }
+        .status-full      { background-color: #f44336; }
+
+        .check-yes { color: #4CAF50; font-weight: bold; }
+        .check-no  { color: #999; }
+
+        /* ===== 管理パネル ===== */
+        .admin-toggle {
+            margin-top: 30px;
+            text-align: right;
+        }
+
+        .admin-toggle button {
+            background: #555;
+            color: white;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+
+        .admin-toggle button:hover { background: #333; }
+
+        #adminPanel {
+            display: none;
+            margin-top: 20px;
+            background: #f0f4ff;
+            border: 2px solid #3b82f6;
+            border-radius: 8px;
+            padding: 24px;
+        }
+
+        #adminPanel h2 {
+            color: #1e40af;
+            margin-bottom: 20px;
+            font-size: 18px;
+            border-bottom: 2px solid #93c5fd;
+            padding-bottom: 8px;
+        }
+
+        .admin-form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            align-items: flex-end;
+        }
+
+        .admin-form .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-width: 200px;
+        }
+
+        .admin-form label {
+            font-size: 13px;
             font-weight: bold;
+            color: #374151;
         }
 
-        .check-no {
-            color: #999;
+        .admin-form select {
+            padding: 10px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
         }
 
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-
-            h1 {
-                font-size: 22px;
-            }
-
-            table {
-                font-size: 12px;
-            }
-
-            th, td {
-                padding: 8px 4px;
-            }
-
-            .status-badge {
-                min-width: 80px;
-                font-size: 12px;
-                padding: 4px 8px;
-            }
+        .admin-form select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
         }
 
-        /* 横スクロール対応（スマホ用） */
-        .table-wrapper {
-            overflow-x: auto;
+        .update-btn {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            height: 42px;
+        }
+
+        .update-btn:hover { background: #1d4ed8; }
+        .update-btn:disabled { background: #93c5fd; cursor: not-allowed; }
+
+        #resultMsg {
+            margin-top: 14px;
+            padding: 10px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            display: none;
+        }
+
+        #resultMsg.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
+
+        #resultMsg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
         }
 
         footer {
@@ -151,157 +210,196 @@
             color: #666;
             font-size: 12px;
         }
+
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            h1 { font-size: 20px; }
+            th, td { padding: 8px 6px; font-size: 12px; }
+            .status-badge { min-width: 90px; font-size: 12px; padding: 4px 8px; }
+            .admin-form { flex-direction: column; }
+            .admin-form .form-group { min-width: 100%; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>帰宅困難者向け一時滞在施設 稼働状況</h1>
-        <p class="update-time">最終更新: <span id="updateTime"></span></p>
+<div class="container">
 
-        <div class="legend">
-            <div class="legend-item">
-                <div class="legend-color status-full"></div>
-                <span>満室</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color status-almost"></div>
-                <span>もうすぐ満室</span>
-            </div>
-            <div class="legend-item">
-                <div class="legend-color status-available"></div>
-                <span>余裕あり</span>
-            </div>
+    <h1>🏢 帰宅困難者向け一時滞在施設 稼働状況</h1>
+    <p class="update-time">最終更新: <span id="updateTime"></span></p>
+
+    <!-- 凡例 -->
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color status-available"></div><span>余裕あり</span>
         </div>
-
-        <div class="table-wrapper">
-            <table>
-                <thead>
-                    <tr>
-                        <th>稼働状況</th>
-                        <th>施設名</th>
-                        <th>住所</th>
-                        <th>最大収容人数</th>
-                        <th>トイレ使用</th>
-                        <th>スマホ充電</th>
-                        <th>備蓄物資</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>なんばスカイオコンベンションセンター</td>
-                        <td>大阪府大阪市中央区難波5-1-60</td>
-                        <td>25人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>大阪府立体育会館<br>（エディオンアリーナ大阪）</td>
-                        <td>大阪府大阪市浪速区難波中3-4-36</td>
-                        <td>500人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-almost">もうすぐ満室</span></td>
-                        <td>ホテルロイヤルクラシック大阪</td>
-                        <td>大阪府大阪市中央区難波4-3-3</td>
-                        <td>150人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>スイスホテル南海大阪</td>
-                        <td>大阪府大阪市中央区難波5-1-60</td>
-                        <td>200人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-full">満室</span></td>
-                        <td>ラウンドワンスタジアム千日前店</td>
-                        <td>大阪府大阪市中央区千日前2-3-9</td>
-                        <td>250人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>レクスト関西本社ビル</td>
-                        <td>大阪府大阪市中央区南船場2-10-26</td>
-                        <td>180人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>浄土真宗本願寺派本願寺津村別院</td>
-                        <td>大阪府大阪市中央区本町4-1-3</td>
-                        <td>300人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-almost">もうすぐ満室</span></td>
-                        <td>大阪市中央公会堂</td>
-                        <td>大阪府大阪市北区中之島1-1-27</td>
-                        <td>350人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>大阪市立中央体育館</td>
-                        <td>大阪府大阪市港区田中3-1-40</td>
-                        <td>400人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                    <tr>
-                        <td><span class="status-badge status-available">余裕あり</span></td>
-                        <td>大阪国際交流センター</td>
-                        <td>大阪府大阪市天王寺区上本町8-2-6</td>
-                        <td>280人</td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                        <td><span class="check-yes">◯</span></td>
-                    </tr>
-                </tbody>
-            </table>
+        <div class="legend-item">
+            <div class="legend-color status-almost"></div><span>もうすぐ満室</span>
         </div>
-
-        <footer>
-            <p>※ 稼働状況は随時変更されます。最新情報をご確認ください。</p>
-        </footer>
+        <div class="legend-item">
+            <div class="legend-color status-full"></div><span>満室</span>
+        </div>
     </div>
 
-    <script>
-        // 現在時刻を表示
-        function updateTime() {
-            const now = new Date();
-            const timeString = now.getFullYear() + '年' + 
-                             (now.getMonth() + 1) + '月' + 
-                             now.getDate() + '日 ' + 
-                             now.getHours() + ':' + 
-                             String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('updateTime').textContent = timeString;
+    <!-- 公開テーブル -->
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>稼働状況</th>
+                    <th>施設名</th>
+                    <th>住所</th>
+                    <th>最大収容人数</th>
+                    <th>トイレ使用</th>
+                    <th>スマホ充電</th>
+                    <th>備蓄物資</th>
+                </tr>
+            </thead>
+            <tbody id="shelterTable">
+                <tr><td colspan="7" style="text-align:center;padding:30px;color:#999;">読み込み中...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- 管理パネル切り替えボタン -->
+    <div class="admin-toggle">
+        <button onclick="toggleAdmin()">🔧 管理者メニュー</button>
+    </div>
+
+    <!-- 管理パネル -->
+    <div id="adminPanel">
+        <h2>🔧 稼働状況 管理パネル</h2>
+        <div class="admin-form">
+            <div class="form-group">
+                <label for="shelterSelect">📍 施設名を選択</label>
+                <select id="shelterSelect">
+                    <option value="">-- 施設を選んでください --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="statusSelect">🚦 稼働状況を選択</label>
+                <select id="statusSelect">
+                    <option value="">-- 状況を選んでください --</option>
+                    <option value="available">✅ 余裕あり</option>
+                    <option value="almost">🟠 もうすぐ満室</option>
+                    <option value="full">🔴 満室</option>
+                </select>
+            </div>
+            <button class="update-btn" onclick="updateStatus()">更新する</button>
+        </div>
+        <div id="resultMsg"></div>
+    </div>
+
+    <footer>
+        <p>※ 稼働状況は随時変更されます。最新情報をご確認ください。</p>
+    </footer>
+</div>
+
+<script>
+    // ===== Supabase 設定 =====
+    const SUPABASE_URL = 'https://bbgpwmkyfvkpogmbikbz.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_5RdECTeM34awt0h8TDlf-w_GTyXhR80';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // ===== 稼働状況ラベル・クラス =====
+    const statusMap = {
+        available: { label: '余裕あり',     cls: 'status-available' },
+        almost:    { label: 'もうすぐ満室', cls: 'status-almost'    },
+        full:      { label: '満室',         cls: 'status-full'      },
+    };
+
+    // ===== データ取得・テーブル描画 =====
+    async function loadShelters() {
+        const { data, error } = await db.from('shelters').select('*').order('id');
+        if (error) {
+            document.getElementById('shelterTable').innerHTML =
+                '<tr><td colspan="7" style="text-align:center;color:red;">データの取得に失敗しました。</td></tr>';
+            return;
         }
-        
-        updateTime();
-        
-        // 1分ごとに時刻を更新
-        setInterval(updateTime, 60000);
-    </script>
+
+        // 公開テーブル
+        const tbody = document.getElementById('shelterTable');
+        tbody.innerHTML = data.map(s => {
+            const st = statusMap[s.status] || statusMap['available'];
+            return `
+            <tr>
+                <td><span class="status-badge ${st.cls}">${st.label}</span></td>
+                <td>${s.name}</td>
+                <td>${s.address}</td>
+                <td>${s.capacity}人</td>
+                <td><span class="${s.toilet   ? 'check-yes' : 'check-no'}">${s.toilet   ? '◯' : '×'}</span></td>
+                <td><span class="${s.charging ? 'check-yes' : 'check-no'}">${s.charging ? '◯' : '×'}</span></td>
+                <td><span class="${s.supplies ? 'check-yes' : 'check-no'}">${s.supplies ? '◯' : '×'}</span></td>
+            </tr>`;
+        }).join('');
+
+        // 管理パネルの施設選択リスト
+        const sel = document.getElementById('shelterSelect');
+        sel.innerHTML = '<option value="">-- 施設を選んでください --</option>' +
+            data.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+    }
+
+    // ===== 稼働状況の更新 =====
+    async function updateStatus() {
+        const shelterId  = document.getElementById('shelterSelect').value;
+        const newStatus  = document.getElementById('statusSelect').value;
+        const btn        = document.querySelector('.update-btn');
+        const msg        = document.getElementById('resultMsg');
+
+        if (!shelterId || !newStatus) {
+            showMsg('⚠️ 施設名と稼働状況を両方選択してください。', 'error');
+            return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = '更新中...';
+
+        const { error } = await db
+            .from('shelters')
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .eq('id', shelterId);
+
+        if (error) {
+            showMsg('❌ 更新に失敗しました。もう一度お試しください。', 'error');
+        } else {
+            const shelterName = document.getElementById('shelterSelect').selectedOptions[0].text;
+            const statusLabel = statusMap[newStatus].label;
+            showMsg(`✅ 「${shelterName}」の状況を「${statusLabel}」に更新しました！`, 'success');
+            await loadShelters();
+        }
+
+        btn.disabled = false;
+        btn.textContent = '更新する';
+    }
+
+    // ===== メッセージ表示 =====
+    function showMsg(text, type) {
+        const msg = document.getElementById('resultMsg');
+        msg.textContent = text;
+        msg.className = type;
+        msg.style.display = 'block';
+        setTimeout(() => { msg.style.display = 'none'; }, 4000);
+    }
+
+    // ===== 管理パネル 開閉 =====
+    function toggleAdmin() {
+        const panel = document.getElementById('adminPanel');
+        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    }
+
+    // ===== 時刻表示 =====
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('updateTime').textContent =
+            `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ` +
+            `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+    }
+
+    // ===== 初期化 =====
+    loadShelters();
+    updateTime();
+    setInterval(updateTime, 60000);
+    setInterval(loadShelters, 30000); // 30秒ごとに自動更新
+</script>
 </body>
 </html>
